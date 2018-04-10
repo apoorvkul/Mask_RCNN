@@ -170,6 +170,7 @@ class Config(object):
     # the RPN. For example, to debug the classifier head without having to
     # train the RPN.
     USE_RPN_ROIS = True
+    OPTIMIZER = 'SGD'
 
     # Train or freeze batch normalization layers
     #     None: Train BN layers. This is the normal mode

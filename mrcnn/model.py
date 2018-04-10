@@ -974,6 +974,8 @@ def build_fpn_mask_graph(rois, feature_maps, image_meta,
                            name='mrcnn_mask_bn1')(x, training=train_bn)
     x = KL.Activation('relu')(x)
 
+    x = KL.Dropout(0.2)(x)
+
     x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same"),
                            name="mrcnn_mask_conv2")(x)
     x = KL.TimeDistributed(BatchNorm(),
@@ -2122,8 +2124,11 @@ class MaskRCNN():
         metrics. Then calls the Keras compile() function.
         """
         # Optimizer object
-        optimizer = keras.optimizers.SGD(lr=learning_rate, momentum=momentum,
+        if self.config.OPTIMIZER == 'SGD':
+        	optimizer = keras.optimizers.SGD(lr=learning_rate, momentum=momentum,
                                          clipnorm=self.config.GRADIENT_CLIP_NORM)
+        else:
+            optimizer = keras.optimizers.Adam(lr=learning_rate)
         # Add Losses
         # First, clear previously set losses to avoid duplication
         self.keras_model._losses = []
@@ -2287,7 +2292,7 @@ class MaskRCNN():
             keras.callbacks.TensorBoard(log_dir=self.log_dir,
                                         histogram_freq=0, write_graph=True, write_images=False),
             keras.callbacks.ModelCheckpoint(self.checkpoint_path,
-                                            verbose=0, save_weights_only=True),
+                                            verbose=0, save_best_only=True, save_weights_only=True),
         ]
 
         # Train
